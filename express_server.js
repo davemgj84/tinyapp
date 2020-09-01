@@ -39,6 +39,8 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-// <%= %>   ****variable insertion
-// <% js %>    *****js code on the page (ie: loops, if etc)
-// <%- include('/path') %>  ***** reusable pieces of each page included
+
+// ********** NOTES FOR EDUCATION PURPOSES **********
+// <%= %>   **** variable insertion
+// <% js %>    ***** js code on the page (ie: loops, if etc) - not visible*
+// <%- include('/path') %>  ***** reusable pieces on each page 'included'
