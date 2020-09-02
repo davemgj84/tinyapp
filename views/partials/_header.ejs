@@ -17,10 +17,8 @@
       <button type="submit" class="btn btn-light">Logout</button>
     </form>
     <% } else { %>
-    <form method="POST" action="/login">
-      <input type="text" name="username" placeholder="Username">
-      <button type="submit" class="btn btn-light">Login</button>
-    </form>
+      <a href="/login"><button type="submit" class="btn btn-light">Login</button></a>&nbsp&nbsp
+      <a href="/register"><button type="submit" class="btn btn-light">Register</button></a>
     <% } %>
   </nav>
 </header>

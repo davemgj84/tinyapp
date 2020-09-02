@@ -27,17 +27,28 @@ const urlDatabase = {
 };
 
 // Creating a user object to store user data:
-const users = { 
+const users = {
   "userRandomID": {
-    id: "userRandomID", 
-    email: "user@example.com", 
+    id: "userRandomID",
+    email: "user@example.com",
     password: "purple-monkey-dinosaur"
   },
- "user2RandomID": {
-    id: "user2RandomID", 
-    email: "user2@example.com", 
+  "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
     password: "dishwasher-funk"
   }
+};
+
+// function to find user by email:
+const findUserByEmail = (email) => {
+  for (const userId in users) {
+    const user = users[userId];
+    if (user.email === email) {
+      return user;
+    }
+  }
+  return null;
 };
 
 // initial server setup tests:
@@ -55,7 +66,7 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
-// get request to handle /urls page - url index and cookies for user login info:
+// get request to show collection of urls:
 app.get("/urls", (req, res) => {
   let templateVars = {
     urls: urlDatabase,
@@ -64,26 +75,35 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-// get request to handle new url input at /urls/new and cookies for user login info:
+// get request to show new url input at /urls/new and cookies for user login info:
 app.get("/urls/new", (req, res) => {
   let templateVars = { user: users[req.cookies["user_id"]] };
   res.render("urls_new", templateVars);
 });
 
-// create register get request:
+// get request to show register page:
 app.get("/register", (req, res) => {
   let templateVars = { user: users[req.cookies["user_id"]] };
   res.render("register", templateVars);
 });
 
-// create post request to 
+// create post request to handle new user registration:
 app.post("/register", (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).send("Must fill out Email and Password fields");
+  }
+  const foundUser = findUserByEmail(email);
+  if (foundUser) {
+    return res.status(400).send("Email already registered");
+  }
   const id = generateRandomString();
-   users[id] = {
+  const newUSer = {
     id: id,
     email: req.body.email,
     password: req.body.password
-  }
+  };
+  users[id] = newUSer;
   res.cookie("user_id", id);
   res.redirect("/urls");
 });
@@ -95,11 +115,27 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
-// handles post request to login via /login - creates a username cookie related to login form - redirects to /urls:
-app.post("/login", (req, res) => {
-  const username = req.body.username;
-  res.cookie("username", username);
-  res.redirect("/urls");
+// Get request to show login page:
+app.get("/login", (req, res) => {
+  let templateVars = { user: users[req.cookies["user_id"]] };
+  res.render("login", templateVars);
+});
+
+// handles post request to login via /login - creates a user_id cookie - redirects to /urls:
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(403).send("Must fill out Email and Password fields");
+  }
+  const foundUser = findUserByEmail(email);
+  if (foundUser === null) {
+    return res.status(403).send("Email not registered");
+  }
+  if (foundUser.password !== password) {
+    return res.send('Incorrect Password');
+  }
+  res.cookie('user_id', foundUser.id);
+  res.redirect('/urls');
 });
 
 // handles post request to logout - clears login info cookie - redirects to /urls:
@@ -108,6 +144,7 @@ app.post("/logout", (req, res) => {
   res.redirect("/urls");
 });
 
+// get request to show the EDIT page - editing the longURL for the current shortURL:
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL];
@@ -119,18 +156,21 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+// get request to redirect to long URL using short url:
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL];
   res.redirect(longURL);
 });
 
+// post request to edit existing short URL:
 app.post("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
   urlDatabase[shortURL] = req.body.editURL;
   res.redirect('/urls');
 });
 
+// Post request to handle deleting urls from index:
 app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
@@ -140,8 +180,3 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
-// ********** NOTES FOR EDUCATION PURPOSES FOR EJS SYNTAX**********
-// <%= %>   **** variable insertion
-// <% js %>    ***** js code on the page (ie: loops, if etc) - not visible*
-// <%- include('/path') %>  ***** reusable pieces on each page 'included'
