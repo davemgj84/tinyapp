@@ -3,6 +3,7 @@ const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -35,23 +36,23 @@ const generateRandomString = () => {
   return result;
 };
 
-// URL Database Object that stores our key value pairs (short URL and Long URL):
+// URL Database Object that stores our key value pairs (short URL and Long URL): - EXAMPLE - only takes new users URLs:
 const urlDatabase = {
   "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID" },
   "9sm5xK": { longURL: "http://www.google.com", userID: "user2RandomID" }
 };
 
-// Creating a user object to store user data:
+// Creating a user object to store user data: - EXAMPLE - New users really only work now due to bcrypt:
 const users = {
   "userRandomID": {
     id: "userRandomID",
     email: "1@mail.com",
-    password: "1234"
+    password: "$2b$10$ga/wgOlNeF3DqB91Xc/x5unIcYeaCUYXHqjIgZiG0u1NcnfIyUdqS"
   },
   "user2RandomID": {
     id: "user2RandomID",
     email: "2@mail.com",
-    password: "1234"
+    password: "$2b$10$ga/wgOlNeF3DqB91Xc/x5unIcYeaCUYXHqjIgZiG0u1NcnfIyUdqS"
   }
 };
 
@@ -99,7 +100,7 @@ app.get("/register", (req, res) => {
   res.render("register", templateVars);
 });
 
-// create post request to handle new user registration:
+// create post request to handle new user registration - uses bcrypt to store user passwords as encrypted hashes instead of plain-text:
 app.post("/register", (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -110,11 +111,13 @@ app.post("/register", (req, res) => {
     return res.status(400).send("Email already registered");
   }
   const id = generateRandomString();
+  const hash = bcrypt.hashSync(req.body.password, 10);
   const newUSer = {
     id: id,
     email: req.body.email,
-    password: req.body.password
+    password: hash
   };
+  console.log("pw 1234", hash);
   users[id] = newUSer;
   res.cookie("user_id", id);
   res.redirect("/urls");
@@ -141,14 +144,18 @@ app.post('/login', (req, res) => {
     return res.status(403).send("Must fill out Email and Password fields");
   }
   const foundUser = findUserByEmail(email);
-  if (foundUser === null) {
+  console.log("founduser?", foundUser);
+  if (!foundUser) {
     return res.status(403).send("Email not registered");
   }
-  if (foundUser.password !== password) {
+  const correctPassword = bcrypt.compareSync(password, foundUser.password);
+  console.log({ correctPassword });
+  if (correctPassword) {
+    res.cookie('user_id', foundUser.id);
+    res.redirect('/urls');
+  } else {
     return res.send('Incorrect Password');
   }
-  res.cookie('user_id', foundUser.id);
-  res.redirect('/urls');
 });
 
 // handles post request to logout - clears login info cookie - redirects to /urls:
