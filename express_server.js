@@ -20,24 +20,36 @@ const generateRandomString = () => {
   return result;
 };
 
+
 // URL Database Object that stores our key value pairs (short URL and Long URL):
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID" },
+  "9sm5xK": { longURL: "http://www.google.com", userID: "user2RandomID" }
 };
 
 // Creating a user object to store user data:
 const users = {
   "userRandomID": {
     id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+    email: "1@mail.com",
+    password: "1234"
   },
   "user2RandomID": {
     id: "user2RandomID",
     email: "user2@example.com",
     password: "dishwasher-funk"
   }
+};
+
+// Function to help separate urls based on userID.
+const urlsForUser = (id) => {
+  const userUrls = {};
+  for (const url in urlDatabase) {
+    if (urlDatabase[url].userID === id) {
+      userUrls[url] = urlDatabase[url].longURL;
+    }
+  }
+  return userUrls;
 };
 
 // function to find user by email:
@@ -68,9 +80,10 @@ app.get("/hello", (req, res) => {
 
 // get request to show collection of urls:
 app.get("/urls", (req, res) => {
+  const userID = req.cookies["user_id"];
   let templateVars = {
-    urls: urlDatabase,
-    user: users[req.cookies["user_id"]]
+    urls: urlsForUser(userID),
+    user: users[userID]
   };
   res.render("urls_index", templateVars);
 });
@@ -110,8 +123,9 @@ app.post("/register", (req, res) => {
 
 // handles post request to create new shortURL with generateRandomString function - redirects to /urls:
 app.post("/urls", (req, res) => {
+  const userID = req.cookies["user_id"];
   let shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL] = { longURL: req.body.longURL, userID: userID }; // Writing into the database
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -147,7 +161,7 @@ app.post("/logout", (req, res) => {
 // get request to show the EDIT page - editing the longURL for the current shortURL:
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL];
+  const longURL = urlDatabase[shortURL].longURL;
   let templateVars = {
     shortURL: shortURL,
     longURL: longURL,
@@ -159,14 +173,14 @@ app.get("/urls/:shortURL", (req, res) => {
 // get request to redirect to long URL using short url:
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL];
+  const longURL = urlDatabase[shortURL].longURL;
   res.redirect(longURL);
 });
 
 // post request to edit existing short URL:
 app.post("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
-  urlDatabase[shortURL] = req.body.editURL;
+  urlDatabase[shortURL].longURL = req.body["editURL"];
   res.redirect('/urls');
 });
 
