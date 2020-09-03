@@ -19,15 +19,15 @@
   <div class="card text-center">
     <div class="card-header"></div>
     <div class="card-body">
-      <h5 class="card-title">TinyURL for: <%= longURL %></h5>
-      <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
+      <h5 class="card-title" style="font-family: Kufam;font-size:21px">TinyURL for: <%= longURL %></h5>
+      <p class="card-text" style="font-family: Kufam;font-size:18px">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
     </div>
     <div class="card-footer text-muted">
       <h2 style="font-family: Kufam;font-size:30px" >Edit</h2>
       <form method="POST" action="/urls/<%= shortURL %>">
-        <label>New URL:</label>
+        <label style="font-family: Kufam;font-size:18px" >New URL:</label>
         <input type="text" name="editURL">
-        <button type="submit" class="btn btn-outline-primary">Submit</button>
+        <button type="submit" class="btn btn-outline-primary" style="font-family: Kufam;font-size:18px">Submit</button>
       </form>
     </div>
   </div>

@@ -17,9 +17,9 @@
       </div>
     </div>
     <% if (user) { %>
-    <a style="color:lightgrey"> Logged in as: <%= user.email %>&nbsp&nbsp </a>
+    <a style="color:lightgrey; font-family: Kufam;font-size:16px"> Logged in as: <%= user.email %>&nbsp&nbsp </a>
     <form method="POST" action="/logout">
-      <button type="submit" class="btn btn-outline-light">Logout</button>
+      <button type="submit" class="btn btn-outline-light" style="font-family: Kufam;font-size:16px">Logout</button>
     </form>
     <% } else { %>
     <div class="navbar-nav">
