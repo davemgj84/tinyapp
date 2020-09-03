@@ -8,6 +8,7 @@
 
   <!-- Bootstrap CSS -->
 
+  <link href='https://fonts.googleapis.com/css?family=Kufam' rel='stylesheet'>
   <link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet'>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
     integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
@@ -21,10 +22,10 @@
   <%- include('partials/_header') %>
 
   <main style="margin: 1em;">
-    <h3>Create TinyURL</h3>
+    <h3 style="font-family: Kufam;font-size:28px">Create TinyURL</h3>
     <form class="form-inline" action="/urls" method="POST">
       <div class="form-group mb-2">
-        <label for="longURL">Enter a URL:</label>
+        <label style="font-family: Kufam;font-size:21px" for="longURL">Enter a URL:</label>
         <input class="form-control" type="text" name="longURL" placeholder="http://" style="width: 300px; margin: 1em">
         <button type="submit" class="btn btn-outline-primary">Submit</button>
       </div>

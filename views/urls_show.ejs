@@ -4,6 +4,7 @@
 <head>
 
   <!-- Bootstrap CSS -->
+  <link href='https://fonts.googleapis.com/css?family=Kufam' rel='stylesheet'>
   <link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet'>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
     integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
@@ -14,7 +15,7 @@
 <body>
 
   <%- include('partials/_header') %>
-
+  <% if (user) { %>
   <div class="card text-center">
     <div class="card-header"></div>
     <div class="card-body">
@@ -22,7 +23,7 @@
       <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
     </div>
     <div class="card-footer text-muted">
-      <h2>Edit</h2>
+      <h2 style="font-family: Kufam;font-size:30px" >Edit</h2>
       <form method="POST" action="/urls/<%= shortURL %>">
         <label>New URL:</label>
         <input type="text" name="editURL">
@@ -30,6 +31,11 @@
       </form>
     </div>
   </div>
+  <% } else { %>
+  <div style="margin: 1em;">
+    <h3 style="font-family: Pacifico;font-size:24px">Please Login or Register</h3>
+  </div>
+  <% } %>
 
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
@@ -41,7 +47,7 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
     integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
     crossorigin="anonymous"></script>
-    
+
 </body>
 
 </html>

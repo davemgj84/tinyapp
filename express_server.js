@@ -9,6 +9,21 @@ app.use(cookieParser());
 
 app.set("view engine", "ejs");
 
+// initial server setup tests:
+app.get("/", (req, res) => {
+  res.send("Hello!");
+});
+
+// initial server setup tests:
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
+});
+
+// initial server setup tests:
+app.get("/hello", (req, res) => {
+  res.send("<html><body>Hello <b>World</b></body></html>\n");
+});
+
 // Function to generate random 6 character string:
 const generateRandomString = () => {
   let result = '';
@@ -19,7 +34,6 @@ const generateRandomString = () => {
   }
   return result;
 };
-
 
 // URL Database Object that stores our key value pairs (short URL and Long URL):
 const urlDatabase = {
@@ -36,8 +50,8 @@ const users = {
   },
   "user2RandomID": {
     id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk"
+    email: "2@mail.com",
+    password: "1234"
   }
 };
 
@@ -63,22 +77,7 @@ const findUserByEmail = (email) => {
   return null;
 };
 
-// initial server setup tests:
-app.get("/", (req, res) => {
-  res.send("Hello!");
-});
-
-// initial server setup tests:
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-// initial server setup tests:
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
-// get request to show collection of urls:
+// get request to show index/collection of urls:
 app.get("/urls", (req, res) => {
   const userID = req.cookies["user_id"];
   let templateVars = {
@@ -88,7 +87,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-// get request to show new url input at /urls/new and cookies for user login info:
+// get request to show new url input at /urls/new - use cookies for user login info:
 app.get("/urls/new", (req, res) => {
   let templateVars = { user: users[req.cookies["user_id"]] };
   res.render("urls_new", templateVars);
@@ -184,10 +183,23 @@ app.post("/urls/:id", (req, res) => {
   res.redirect('/urls');
 });
 
-// Post request to handle deleting urls from index:
+// Post request to handle deleting urls from index - secured for users specific urls and have to be logged in:
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
-  res.redirect("/urls");
+  const userID = req.cookies["user_id"];
+  const shortURL = req.params.shortURL;
+  const urls = urlsForUser(userID);
+  const keys = Object.keys(urls);
+  if (userID) {
+    for (let key of keys) {
+      if (shortURL === key) {
+        delete urlDatabase[req.params.shortURL];
+        return res.redirect("/urls");
+      }
+    }
+    return res.status(401).send("Url not found in your database!\n");
+  } else {
+    return res.status(403).send("Please login or register!\n");
+  }
 });
 
 // allows server to listen for requests:
