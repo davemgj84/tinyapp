@@ -117,7 +117,6 @@ app.post("/register", (req, res) => {
     email: req.body.email,
     password: hash
   };
-  console.log("pw 1234", hash);
   users[id] = newUSer;
   res.cookie("user_id", id);
   res.redirect("/urls");
@@ -144,12 +143,10 @@ app.post('/login', (req, res) => {
     return res.status(403).send("Must fill out Email and Password fields");
   }
   const foundUser = findUserByEmail(email);
-  console.log("founduser?", foundUser);
   if (!foundUser) {
     return res.status(403).send("Email not registered");
   }
   const correctPassword = bcrypt.compareSync(password, foundUser.password);
-  console.log({ correctPassword });
   if (correctPassword) {
     res.cookie('user_id', foundUser.id);
     res.redirect('/urls');
