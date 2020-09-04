@@ -1,17 +1,22 @@
+// TINYAPP SERVER:
+
+// Bringing in everything required below (ports, modules, etc):
 const express = require("express");
 const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
-const {findUserByEmail, urlsForUser, generateRandomString} = require('./helpers');
+const { findUserByEmail, urlsForUser, generateRandomString } = require('./helpers');
 
+// Setting up middleware for app to use:
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieSession({
   name: "session",
   keys: ["key"]
 }));
 
+// Setting up express engine:
 app.set("view engine", "ejs");
 
 // initial server setup tests:
@@ -29,13 +34,13 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
-// URL Database Object that stores our key value pairs (short URL and Long URL) - **EXAMPLE** - the users in the static database are currently examples - to test create new user(register):
+// URL Database Object that stores our key value pairs (short URL and Long URL) - **EXAMPLE** - the users in the static database are placeholders - to test create new user(register):
 const urlDatabase = {
   "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "userRandomID" },
   "9sm5xK": { longURL: "http://www.google.com", userID: "user2RandomID" }
 };
 
-// Creating a user object to store user database: - EXAMPLE - New users really only work now due to bcrypt:
+// Creating a user object to store user database: - **EXAMPLE** - New users only work now due to bcrypt - These users are placeholders, nothing more:
 const users = {
   "userRandomID": {
     id: "userRandomID",
@@ -59,7 +64,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-// get request to show new url input at /urls/new - use cookies for user login info:
+// get request to show new url input at /urls/new - use cookies:
 app.get("/urls/new", (req, res) => {
   let templateVars = { user: users[req.session.id] };
   res.render("urls_new", templateVars);
@@ -93,14 +98,6 @@ app.post("/register", (req, res) => {
   res.redirect("/urls");
 });
 
-// handles post request to create new shortURL with generateRandomString function - redirects to /urls:
-app.post("/urls", (req, res) => {
-  const userID = req.session.id;
-  let shortURL = generateRandomString();
-  urlDatabase[shortURL] = { longURL: req.body.longURL, userID: userID }; // Writing into the database
-  res.redirect(`/urls/${shortURL}`);
-});
-
 // Get request to show login page:
 app.get("/login", (req, res) => {
   let templateVars = { user: users[req.session.id] };
@@ -114,7 +111,6 @@ app.post('/login', (req, res) => {
     return res.status(403).send("Must fill out Email and Password fields");
   }
   const foundUser = findUserByEmail(email, users);
-  console.log(foundUser);
   if (!foundUser) {
     return res.status(403).send("Email not registered");
   }
@@ -131,6 +127,14 @@ app.post('/login', (req, res) => {
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect("/urls");
+});
+
+// handles post request to create new shortURL with generateRandomString function - redirects to /urls:
+app.post("/urls", (req, res) => {
+  const userID = req.session.id;
+  let shortURL = generateRandomString();
+  urlDatabase[shortURL] = { longURL: req.body.longURL, userID: userID }; // Writing into the database
+  res.redirect(`/urls/${shortURL}`);
 });
 
 // get request to show the EDIT page - editing the longURL for the current shortURL:

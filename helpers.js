@@ -31,4 +31,4 @@ const generateRandomString = () => {
   return result;
 };
 
-module.exports = {findUserByEmail, urlsForUser, generateRandomString};
+module.exports = { findUserByEmail, urlsForUser, generateRandomString };
