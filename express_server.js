@@ -1,4 +1,4 @@
-// TINYAPP SERVER:
+// TinyApp Server:
 
 // Bringing in everything required below (ports, modules, etc):
 const express = require("express");
