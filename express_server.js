@@ -21,7 +21,7 @@ app.set("view engine", "ejs");
 
 // initial server setup tests:
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect('/login');
 });
 
 // initial server setup tests:
