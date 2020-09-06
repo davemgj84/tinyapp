@@ -21,7 +21,12 @@ app.set("view engine", "ejs");
 
 // initial server setup tests:
 app.get("/", (req, res) => {
-  res.redirect('/login');
+  const userID = req.session.id;
+  if (userID) {
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login");
+  }
 });
 
 // initial server setup tests:
@@ -66,14 +71,24 @@ app.get("/urls", (req, res) => {
 
 // get request to show new url input at /urls/new - use cookies:
 app.get("/urls/new", (req, res) => {
-  let templateVars = { user: users[req.session.id] };
-  res.render("urls_new", templateVars);
+  const userID = req.session.id;
+  if (userID) {
+    let templateVars = { user: users[req.session.id] };
+    res.render("urls_new", templateVars);
+  } else {
+    res.redirect("/login");
+  }
 });
 
 // get request to show register page:
 app.get("/register", (req, res) => {
-  let templateVars = { user: users[req.session.id] };
-  res.render("register", templateVars);
+  const userID = req.session.id;
+  if (userID) {
+    res.redirect("/urls");
+  } else {
+    let templateVars = { user: users[req.session.id] };
+    res.render("register", templateVars);
+  }
 });
 
 // create post request to handle new user registration - uses bcrypt to store user passwords as encrypted hashes instead of plain-text:
@@ -100,8 +115,13 @@ app.post("/register", (req, res) => {
 
 // Get request to show login page:
 app.get("/login", (req, res) => {
-  let templateVars = { user: users[req.session.id] };
-  res.render("login", templateVars);
+  const userID = req.session.id;
+  if (userID) {
+    res.redirect("/urls");
+  } else {
+    let templateVars = { user: users[req.session.id] };
+    res.render("login", templateVars);
+  }
 });
 
 // handles post request to login via /login - creates a user_id cookie - redirects to /urls:
@@ -132,26 +152,41 @@ app.post("/logout", (req, res) => {
 // handles post request to create new shortURL with generateRandomString function - redirects to /urls:
 app.post("/urls", (req, res) => {
   const userID = req.session.id;
-  let shortURL = generateRandomString();
-  urlDatabase[shortURL] = { longURL: req.body.longURL, userID: userID }; // Writing into the database
-  res.redirect(`/urls/${shortURL}`);
+  if (userID) {
+    let shortURL = generateRandomString();
+    urlDatabase[shortURL] = { longURL: req.body.longURL, userID: userID }; // Writing into the database
+    res.redirect(`/urls/${shortURL}`);
+  } else {
+    res.status(403).send("Please Login or Register!\n");
+  }
 });
 
 // get request to show the EDIT page - editing the longURL for the current shortURL:
-app.get("/urls/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL].longURL;
-  let templateVars = {
-    shortURL: shortURL,
-    longURL: longURL,
-    user: users[req.session.id]
-  };
-  res.render("urls_show", templateVars);
+app.get("/urls/:id", (req, res) => {
+  const userID = req.session.id;
+  const shortURL = req.params.id;
+  if (!urlDatabase[shortURL]) {
+    res.status(401).send("Url not found in your database!\n");
+  }
+  if (urlDatabase[shortURL].userID === userID) {
+    const longURL = urlDatabase[shortURL].longURL;
+    let templateVars = {
+      shortURL: shortURL,
+      longURL: longURL,
+      user: users[req.session.id]
+    };
+    res.render("urls_show", templateVars);
+  } else {
+    res.status(401).send("Url not found in your database!\n");
+  }
 });
 
 // get request to redirect to long URL using short url:
-app.get("/u/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
+app.get("/u/:id", (req, res) => {
+  const shortURL = req.params.id;
+  if (!urlDatabase[shortURL]) {
+    res.status(404).send("Url not found!\n");
+  }
   const longURL = urlDatabase[shortURL].longURL;
   res.redirect(longURL);
 });
@@ -159,8 +194,13 @@ app.get("/u/:shortURL", (req, res) => {
 // post request to edit existing short URL:
 app.post("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
-  urlDatabase[shortURL].longURL = req.body["editURL"];
-  res.redirect('/urls');
+  const userID = req.session.id;
+  if (userID && (urlDatabase[shortURL].userID === userID)) {
+    urlDatabase[shortURL].longURL = req.body["editURL"];
+    res.redirect('/urls');
+  } else {
+    res.status(403).send("Please Login or Register!\n");
+  }
 });
 
 // Post request to handle deleting urls from index - secured for users specific urls and have to be logged in:
